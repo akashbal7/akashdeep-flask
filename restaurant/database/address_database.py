@@ -15,3 +15,7 @@ class AddressDatabase:
         db.session.add(new_address)
         db.session.flush()
         return new_address.id
+    
+    @staticmethod
+    def get_address_by_id(address_id):
+        return Address.query.get(address_id)

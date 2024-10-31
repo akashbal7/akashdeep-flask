@@ -17,3 +17,7 @@ class RestaurantDatabase:
         db.session.add(new_restaurant)
         db.session.flush()
         return new_restaurant.id
+    
+    @staticmethod
+    def get_restaurant_by_owner_id(owner_id):
+        return Restaurant.query.filter_by(owner_id=owner_id).first()

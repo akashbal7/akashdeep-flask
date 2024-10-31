@@ -110,7 +110,16 @@ class UserService:
                 return {'error': 'Invalid email or password.'}, 401
 
             # Return a success message (and possibly a token or user data)
-            return  {'message': 'Login successful', 'user_id': user.id, 'role': user.role, 'email': user.email}, 200
+            result = {
+                'message': 'Login successful',
+                'user_id': user.id, 
+                'role': user.role, 
+                'email': user.email,
+                'first_name':user.first_name,
+                'last_name':user.last_name,
+                'full_name':user.first_name + ' ' + user.last_name
+            }
+            return  result, 200
 
         except Exception as e:
             logger.error(f"Error during login: {e}")
@@ -134,6 +143,31 @@ class UserService:
                 'phone_number': user.phone_number,
                 # Add other fields as necessary
             }
+
+             # If the user is an owner, get their restaurant data
+            if user.role == 'owner':
+                restaurant = RestaurantDatabase.get_restaurant_by_owner_id(user.id)
+                print("ressssssssss",restaurant.address_id)
+                address = AddressDatabase.get_address_by_id(restaurant.address_id)
+                if restaurant:
+                    user_data['restaurant'] = {
+                        'id': restaurant.id,
+                        'name': restaurant.name,
+                        'phone_number': restaurant.phone_number,
+                        'website': restaurant.website,
+                        'sitting_capacity': restaurant.sitting_capacity,
+                        'cuisine': restaurant.cuisine,
+                        'address': {
+                            'id': address.id,
+                            'address_line_1': address.address_line_1,
+                            'address_line_2': address.address_line_2,
+                            'city': address.city,
+                            'state': address.state,
+                            'postal_code': address.postal_code,
+                            'country': address.country,
+                        }
+                    }
+
             return user_data, 200
 
         except Exception as e:
