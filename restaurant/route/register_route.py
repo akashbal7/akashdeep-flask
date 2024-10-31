@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 register_bp = Blueprint('register_controller', __name__)
-food_bp = Blueprint('food', __name__)
 
 @register_bp.route('/register', methods=['POST'])
 def register():
@@ -86,31 +85,5 @@ def edit_address(user_id,address_id):
         logger.exception("Error updating address")
         return jsonify({'error': 'Failed to update address. Please try again later.'}), 500
 
-@app.route('/restaurant/<int:restaurant_id>/food', methods=['POST'])
-def add_food_item(restaurant_id):
-    
-    data = request.get_json()
-    try:
-        food_item = UserService.add_food_item(data, restaurant_id)
-        return jsonify({"message": "Food item added successfully.", "food_item_id": food_item.id}), 201
-    except Exception as e:
-        return jsonify({"message": "Failed to add food item.", "error": str(e)}), 500
-    
-@app.route('/restaurant/<int:restaurant_id>/food/<int:food_item_id>', methods=['GET'])
-def get_food_item(restaurant_id, food_item_id):
-    try:
-        food_item = UserService.get_food_item(restaurant_id, food_item_id)
-        return jsonify(food_item), 200
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-    
-@app.route('/restaurant/<int:restaurant_id>/food/<int:food_item_id>', methods=['PUT'])
-def update_food_item(restaurant_id, food_item_id):
-    data = request.get_json()
-    try:
-        updated_food_item = UserService.update_food_item(data, restaurant_id, food_item_id)
-        return jsonify({"message": "Food item updated successfully.", "food_item": updated_food_item}), 200
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
     
 

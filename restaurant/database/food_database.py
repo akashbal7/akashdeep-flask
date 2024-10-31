@@ -36,9 +36,41 @@ class FoodDatabase:
         
     @staticmethod
     def get_food_item(food_item_id, restaurant_id):
-        return db.session.query(FoodItem).filter_by(id=food_item_id, restaurant_id=restaurant_id).first()
+        try:
+            return FoodItem.query.get(food_item_id)
+        except Exception as e:
+            print(f"Error retrieving food item with ID {food_item_id} for restaurant {restaurant_id}: {e}")
+            raise ValueError("Failed to retrieve food item.")
 
     @staticmethod
     def get_nutrition_fact(food_item_id):
-        return db.session.query(NutritionFacts).filter_by(food_item_id=food_item_id).first()
+        try:
+            return db.session.query(NutritionFacts).filter_by(food_item_id=food_item_id).first()
+        except Exception as e:
+            print(f"Error retrieving nutrition facts for food item ID {food_item_id}: {e}")
+            raise ValueError("Failed to retrieve nutrition facts.")
+
+    @staticmethod
+    def delete_food_item(food_item):
+        try:
+            db.session.delete(food_item)
+        except Exception as e:
+            print(f"Error deleting food item with ID {food_item.id}: {e}")
+            raise ValueError("Failed to delete food item.")
+
+    @staticmethod
+    def delete_nutrition_fact(nutrition_fact):
+        try:
+            db.session.delete(nutrition_fact)
+        except Exception as e:
+            print(f"Error deleting nutrition facts for food item ID {nutrition_fact.food_item_id}: {e}")
+            raise ValueError("Failed to delete nutrition facts.")
+
+    @staticmethod
+    def rollback_transaction():
+        try:
+            db.session.rollback()
+        except Exception as e:
+            print(f"Error rolling back transaction: {e}")
+            raise ValueError("Failed to rollback transaction.")
 
