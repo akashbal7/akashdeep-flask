@@ -29,3 +29,34 @@ class AddressService:
         except Exception as e:
             logger.error(f"Error adding address: {e}")
             return {'error': 'Failed to add address. Please try again.'}, 500
+
+    @staticmethod
+    def update_address(address_id, data):
+        # validate requied fields for the address
+        required_feilds = ['address_line_1','city','state','postal_code','country']
+        for field in required_feilds:
+            if not data.get(field):
+                return {'error': f'{field.replace("_", " ").title()} is required'},400
+        
+        # Attempt to update the address in the database
+        try:
+            address = AddressDatabase.get_address_by_id(address_id)
+            if not address:
+                return {'error': "Address not found"}, 404
+            
+            #update address fields
+
+            address.address_line_1 = data.get('address_line_1', address.address_line_1)
+            address.address_line_2 = data.get('address_line_2', address.address_line_2)
+            address.city = data.get('city', address.city)
+            address.state = data.get('state', address.state)
+            address.postal_code = data.get('postal_code', address.postal_code)
+            address.country = data.get('county', address.country)
+
+            #save changes to the database
+            AddressDatabase.update_address(address)
+            return {'message': 'Address updated successfully'},200
+        
+        except Exception as e:
+            logger.error(f"Error update address: {e}")
+            return {'error': 'Failed to update address. Please try again.'}, 500
