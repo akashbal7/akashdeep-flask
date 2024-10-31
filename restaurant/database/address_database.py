@@ -19,3 +19,7 @@ class AddressDatabase:
     @staticmethod
     def get_address_by_id(address_id):
         return Address.query.get(address_id)
+    
+    @staticmethod
+    def update_address(address_data):
+        db.session.commit() 

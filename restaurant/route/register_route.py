@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from restaurant.services.address_service import AddressService
 from restaurant.services.register_service import UserService
 from restaurant import app
 import logging
