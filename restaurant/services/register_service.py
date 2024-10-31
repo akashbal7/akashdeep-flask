@@ -1,5 +1,6 @@
+from flask import jsonify
 from sqlalchemy.exc import IntegrityError, OperationalError
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from restaurant.database.user_database import UserDatabase
 from restaurant.database.restaurant_database import RestaurantDatabase
 from restaurant.database.address_database import AddressDatabase
@@ -54,7 +55,8 @@ class UserService:
                 "city":None,
                 "state":None,
                 "postal_code":None,
-                "country":None,
+                "country":None
+                ,
                 }
 
                 address_id = AddressDatabase.add_address(address_data)
@@ -90,3 +92,74 @@ class UserService:
             logger.error(f"Error during registration: {e}")
             db.session.rollback()
             return {'error': 'Registration failed. Please try again1.'}, 500
+    
+    @staticmethod
+    def login_user(data):
+        # Check if the user exists
+        email = data.get('email')
+        password = data.get('password')
+
+        try:
+            user = UserDatabase.get_user_by_email(email)
+
+            if not user:
+                return {'error': 'Invalid email or password.'}, 401
+
+            # Verify the password
+            if not check_password_hash(user.password_hash, password):
+                return {'error': 'Invalid email or password.'}, 401
+
+            # Return a success message (and possibly a token or user data)
+            return  {'message': 'Login successful', 'user_id': user.id, 'role': user.role, 'email': user.email}, 200
+
+        except Exception as e:
+            logger.error(f"Error during login: {e}")
+            return {'error': 'An error occurred while trying to log in. Please try again later.'}, 500
+        
+
+    @staticmethod
+    def get_user_by_id(user_id):
+        try:
+            user = UserDatabase.get_user_by_id(user_id)
+            if user is None:
+                return None, 404
+            
+            # Create a dictionary with user details to return
+            user_data = {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'phone_number': user.phone_number,
+                # Add other fields as necessary
+            }
+            return user_data, 200
+
+        except Exception as e:
+            logger.error(f"Error retrieving user: {e}")
+            return {'error': 'Failed to retrieve user. Please try again later.'}, 500
+        
+    @staticmethod
+    def edit_user(user_id, data):
+        user = UserDatabase.get_user_by_id(user_id)
+        if user is None:
+            return None, 404
+
+        # Update fields as necessary
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number']
+
+        # Commit the changes to the database
+        print("hhhhhhhhh",user)
+        try:
+            UserDatabase.update_user(user)
+            return {'message': 'User updated successfully.'}, 200
+        except Exception as e:
+            logger.error(f"Error updating user: {e}")
+            db.session.rollback()
+            return {'error': 'Failed to update user. Please try again later.'}, 500

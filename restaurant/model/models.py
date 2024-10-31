@@ -11,13 +11,15 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(50), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    phone_number = db.Column(db.String(10), nullable=True, 
+                             info={'check': 'LENGTH(phone_number) = 10 OR phone_number IS NULL'})
     
     __table_args__ = (
         db.CheckConstraint("role IN ('customer', 'owner')", name='check_role'),
     )
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f'<User {self.email, self.first_name, self.last_name, self.role}>'
     
 class Address(db.Model):
     __tablename__ = 'addresses'
