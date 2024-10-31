@@ -51,7 +51,7 @@ class AddressService:
             address.city = data.get('city', address.city)
             address.state = data.get('state', address.state)
             address.postal_code = data.get('postal_code', address.postal_code)
-            address.country = data.get('county', address.country)
+            address.country = data.get('country', address.country)
 
             #save changes to the database
             AddressDatabase.update_address(address)
