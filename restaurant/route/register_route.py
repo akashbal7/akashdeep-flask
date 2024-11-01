@@ -4,6 +4,8 @@ from restaurant.services.register_service import UserService
 from restaurant import app
 import logging
 from restaurant.services.register_service import add_food_item
+from restaurant.services.restaurant_service import RestaurantService
+
 
 logger = logging.getLogger(__name__)
 register_bp = Blueprint('register_controller', __name__)
@@ -94,5 +96,22 @@ def add_food_item_route():
         food_item = add_food_item(data)
         return jsonify({"message": "Food item added successfully.", "food_item_id": food_item.id}), 201
     except Exception as e:
-        db.session.rollback()
+        db.session.rollback() 
         return jsonify({"message": "Failed to add food item.", "error": str(e)}), 500
+
+@register_bp.route('/restaurant/<int:user_id>', methods=['PUT'])
+def edit_restaurant_profile(user_id):
+    try:
+        data = request.get_json()
+        logger.info(f"Received edit request for restaurant ID: {user_id}")
+
+        result, status_code = RestaurantService.edit_restaurant_profile(user_id, data)
+
+        if status_code == 404:
+            return jsonify({'error': 'Restaurant not found.'}), 404
+
+        return jsonify(result), status_code
+
+    except Exception as e:
+        logger.exception("Error editing restaurant profile")
+        return jsonify({'error': 'Failed to update restaurant profile. Please try again later.'}), 500

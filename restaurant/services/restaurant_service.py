@@ -3,9 +3,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class UserService:
+class RestaurantService:
     @staticmethod
-    def add_restaurant(data):
+    def edit_restaurant_profile(data):
         # Validate required fields for the restaurant
         required_fields = ['owner_id', 'name', 'address_id']
         for field in required_fields:
@@ -33,3 +33,4 @@ class UserService:
         except Exception as e:
             logger.error(f"Error adding restaurant: {e}")
             return {'error': 'Failed to add restaurant. Please try again.'}, 500
+    

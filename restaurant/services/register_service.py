@@ -261,3 +261,32 @@ def add_food_item(data):
     
     db.session.commit()
     return food_item
+
+@staticmethod
+def edit_restaurant_profile(user_id, data):
+    restaurant = UserDatabase.get_restaurant_by_id(user_id)
+    if restaurant is None:
+        return None, 404
+
+    # Update fields as necessary
+    if 'restaurant_name' in data:
+        restaurant.restaurant_name = data['restaurant_name']
+    if 'about' in data:
+        restaurant.about = data['about']
+    if 'phone' in data:
+        restaurant.phone = data['phone']
+    if 'website' in data:
+        restaurant.website = data['website']
+    if 'cuisine' in data:
+        restaurant.cuisine = data['cuisine']
+    if 'sitting_capacity' in data:
+        restaurant.sitting_capacity = data['sitting_capacity']
+
+    # Commit the changes to the database
+    try:
+        UserDatabase.update_restaurant(restaurant)
+        return {'message': 'Restaurant profile updated successfully.'}, 200
+    except Exception as e:
+        logger.error(f"Error updating restaurant profile: {e}")
+        db.session.rollback()
+        return {'error': 'Failed to update restaurant profile. Please try again later.'}, 500
