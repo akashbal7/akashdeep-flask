@@ -1,35 +1,43 @@
 from restaurant.database.restaurant_database import RestaurantDatabase
+from restaurant.database.user_database import UserDatabase
 import logging
 
 logger = logging.getLogger(__name__)
 
-class UserService:
+class RestaurantService:
     @staticmethod
-    def add_restaurant(data):
-        # Validate required fields for the restaurant
-        required_fields = ['owner_id', 'name', 'address_id']
-        for field in required_fields:
-            if not data.get(field):
-                return {'error': f'{field.replace("_", " ").title()} is required'}, 400
-
-        # Additional validation for optional fields can be added here if needed
-
-        # Prepare the restaurant data for insertion
-        restaurant_data = {
-            'owner_id': data['owner_id'],  # Direct access using square brackets
-            'name': data['name'],
-            'address_id': data['address_id'],
-            'phone_number': data['phone_number'],  # Optional, can be None if not provided
-            'website': data['website'],            # Optional
-            'sitting_capacity': data['sitting_capacity'],  # Optional
-            'cuisine': data['cuisine']             # Optional
-        }
-
-
-        # Attempt to add the restaurant to the database
+    def update_restaurant(data, restaurant_id):
         try:
-            restaurant = RestaurantDatabase.add_restaurant(restaurant_data)
-            return {'message': 'Restaurant added successfully', 'restaurant_id': restaurant.id}, 201
+            # Fetch the restaurant by ID
+            restaurant = RestaurantDatabase.get_restaurant(restaurant_id)
+            if not restaurant:
+                raise ValueError("Restaurant not found.")
+
+            # Update restaurant fields
+            restaurant.name = data.get('restaurant_name', restaurant.name)
+            restaurant.phone_number = data.get('phone_number', restaurant.phone_number)
+            restaurant.website = data.get('website', restaurant.website)
+            restaurant.sitting_capacity = data.get('sitting_capacity', restaurant.sitting_capacity)
+            restaurant.cuisine = data.get('cuisine', restaurant.cuisine)
+
+            # Update user details (owner)
+            user = UserDatabase.get_user_by_id(restaurant.owner_id)
+            if not restaurant:
+                raise ValueError("User not found.")
+            if user:
+                user.first_name = data.get('first_name', user.first_name)
+                user.last_name = data.get('last_name', user.last_name)
+                UserDatabase.update_user(user)
+
+            # Commit the changes
+            RestaurantDatabase.update_restaurant(restaurant)
+            RestaurantDatabase.commit_transaction()
+            
+            return restaurant
+        except ValueError as e:
+            raise ValueError(str(e))
+        
         except Exception as e:
-            logger.error(f"Error adding restaurant: {e}")
-            return {'error': 'Failed to add restaurant. Please try again.'}, 500
+            print(f"Failed to update restaurant: {e}")
+            raise ValueError("Failed to update restaurant details.")
+        

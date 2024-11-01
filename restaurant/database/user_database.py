@@ -25,7 +25,7 @@ class UserDatabase:
     
     @staticmethod
     def update_user(user):
-        db.session.commit()  # Commit the changes made to the user instance.
+        db.session.add(user)  # Commit the changes made to the user instance.
 
     @staticmethod
     def delete_user(user_id):
