@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from restaurant.model.models import FoodItem, NutritionFacts, db
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -75,11 +76,22 @@ class FoodDatabase:
             raise ValueError("Failed to rollback transaction.")
         
     @staticmethod
-    def get_food_list(restaurant_id):
+    def get_restaurant_food_list(restaurant_id):
         try:
             return FoodItem.query.filter_by(restaurant_id=restaurant_id).all()
         except Exception as e:
-            db.session.rollback()
             print(f"Error fetching food list: {e}")
             raise ValueError("Database error when retrieving food list.")
+        
+    @staticmethod
+    def get_all_foods(category=None):
+        try:
+            query = FoodItem.query
+            if category:
+              query = query.filter(func.lower(FoodItem.category) == func.lower(category))
+            items = query.all()
+            return items
+        except Exception as e:
+            print(f"Error fetching all food items: {e}")
+            raise ValueError("Database error when retrieving all food items.")
 

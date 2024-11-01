@@ -44,8 +44,17 @@ def delete_food_item(restaurant_id, food_item_id):
 @app.route('/restaurant/<int:restaurant_id>/foods', methods=['GET'])
 def get_food_list(restaurant_id):
     try:
-        food_list = FoodService.get_food_list(restaurant_id)
+        food_list = FoodService.get_restaurant_food_list(restaurant_id)
         return jsonify({"foods": food_list}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/foods', methods=['GET'])
+def get_all_foods():
+    try:
+        category = request.args.get('category')
+        all_foods = FoodService.get_all_foods(category)
+        return jsonify(all_foods), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 500
 

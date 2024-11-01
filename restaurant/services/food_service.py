@@ -190,9 +190,9 @@ class FoodService:
             raise ValueError(str(e))
         
     @staticmethod
-    def get_food_list(restaurant_id):
+    def get_restaurant_food_list(restaurant_id):
         try:
-            food_items = FoodDatabase.get_food_list(restaurant_id)
+            food_items = FoodDatabase.get_restaurant_food_list(restaurant_id)
             food_list = []
             
             for food_item in food_items:
@@ -216,6 +216,29 @@ class FoodService:
         except Exception as e:
             print(f"Error retrieving food list: {e}")
             raise ValueError("Failed to retrieve food list.")
+        
+    @staticmethod
+    def get_all_foods(category):
+        try:
+            food_items = FoodDatabase.get_all_foods(category)
+            all_foods = [
+                {
+                    "id": food_item.id,
+                    "restaurant_id": food_item.restaurant_id,
+                    "name": food_item.name,
+                    "description": food_item.description,
+                    "price": food_item.price,
+                    "category": food_item.category,
+                    "in_stock": food_item.availability
+                }
+                for food_item in food_items
+            ]
+
+            # Return all food items with the total count
+            return {"foods": all_foods, "total_count": len(all_foods)}
+        except Exception as e:
+            print(f"Error retrieving all foods: {e}")
+            raise ValueError("Failed to retrieve food items.")
 
 
 
