@@ -40,6 +40,15 @@ def delete_food_item(restaurant_id, food_item_id):
         return jsonify({"message": "Food item deleted successfully."}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+    
+@app.route('/restaurant/<int:restaurant_id>/foods', methods=['GET'])
+def get_food_list(restaurant_id):
+    try:
+        food_list = FoodService.get_food_list(restaurant_id)
+        return jsonify({"foods": food_list}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 500
+
 
     
 

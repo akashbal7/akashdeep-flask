@@ -188,5 +188,34 @@ class FoodService:
             FoodDatabase.rollback_transaction
             print(f"Failed to delete food item: {e}")
             raise ValueError(str(e))
+        
+    @staticmethod
+    def get_food_list(restaurant_id):
+        try:
+            food_items = FoodDatabase.get_food_list(restaurant_id)
+            food_list = []
+            
+            for food_item in food_items:
+                item_data = {
+                    "id": food_item.id,
+                    "name": food_item.name,
+                    "description": food_item.description,
+                    "price": food_item.price,
+                    "category": food_item.category,
+                    "in_stock": food_item.availability
+                }
+                
+                # Optionally add nutrition facts
+                nutrition_fact = FoodDatabase.get_nutrition_fact(food_item.id)
+                if nutrition_fact:
+                    item_data["nutrition_facts"] = nutrition_fact.to_dict()
+                
+                food_list.append(item_data)
+                
+            return food_list
+        except Exception as e:
+            print(f"Error retrieving food list: {e}")
+            raise ValueError("Failed to retrieve food list.")
+
 
 

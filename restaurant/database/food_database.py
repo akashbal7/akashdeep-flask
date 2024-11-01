@@ -73,4 +73,13 @@ class FoodDatabase:
         except Exception as e:
             print(f"Error rolling back transaction: {e}")
             raise ValueError("Failed to rollback transaction.")
+        
+    @staticmethod
+    def get_food_list(restaurant_id):
+        try:
+            return FoodItem.query.filter_by(restaurant_id=restaurant_id).all()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error fetching food list: {e}")
+            raise ValueError("Database error when retrieving food list.")
 
