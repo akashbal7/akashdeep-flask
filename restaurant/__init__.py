@@ -18,6 +18,8 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 migrate = Migrate(app, db)
+app.config['UPLOAD_FOLDER'] = 'static/uploads'  # Make sure this folder exists
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # Import User model after app initialization to avoid circular import issues
 @login_manager.user_loader

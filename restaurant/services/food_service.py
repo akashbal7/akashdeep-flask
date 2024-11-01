@@ -1,15 +1,32 @@
 from restaurant.database.food_database import FoodDatabase
-import logging
+import logging, os
+from werkzeug.utils import secure_filename
 from restaurant.model.models import FoodItem, NutritionFacts
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+UPLOAD_FOLDER = '../static/uploads'  # Ensure this folder exists
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
 class FoodService:
     
     @staticmethod
-    def add_food_item(data, restaurant_id):
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+    @staticmethod
+    def add_food_item(data, restaurant_id, image_file):
         try:
+            
+            if image_file and FoodService.allowed_file(image_file.filename):
+                filename = secure_filename(image_file.filename)
+                print("filename", filename)
+                image_path = os.path.join(UPLOAD_FOLDER, filename)
+                print("image_path", image_path)
+                image_file.save(image_path)  # Save the image file
+            
             # Create FoodItem object
             food_item = FoodItem(
                 restaurant_id=restaurant_id,
