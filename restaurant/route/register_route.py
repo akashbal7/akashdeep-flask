@@ -70,20 +70,7 @@ def edit_user(user_id):
     except Exception as e:
         logger.exception("Error editing user")
         return jsonify({'error': 'Failed to update user. Please try again later.'}), 500
-    
-@register_bp.route('/user/<int:user_id>/address/<int:address_id>', methods=['PUT'])
-def edit_address(user_id,address_id):
-    try:
-        data = request.get_json()
-        logger.info(f"Received address update request for user ID: {user_id}, address ID: {address_id}")
 
-        result, status_code = AddressService.update_address(address_id, data)
-
-        return jsonify(result), status_code
-
-    except Exception as e:
-        logger.exception("Error updating address")
-        return jsonify({'error': 'Failed to update address. Please try again later.'}), 500
 
 
     
