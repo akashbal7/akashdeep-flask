@@ -239,6 +239,22 @@ class FoodService:
         except Exception as e:
             print(f"Error retrieving all foods: {e}")
             raise ValueError("Failed to retrieve food items.")
+        
+    @staticmethod
+    def get_food_nutrition_fact(food_item_id):
+        try:
+            # Fetch the nutrition fact for the given food item
+            nutrition_fact = FoodDatabase.get_nutrition_fact(food_item_id)
+            
+            # If the nutrition fact exists, return it as a dictionary
+            if not nutrition_fact:
+                raise ValueError("Nutrition facts Unavailable.")
+                
+            return nutrition_fact.to_dict()
+                
+        except Exception as e:
+            print(f"Error retrieving nutrition facts: {e}")
+            raise ValueError(str(e))
 
 
 

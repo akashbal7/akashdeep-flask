@@ -94,4 +94,12 @@ class FoodDatabase:
         except Exception as e:
             print(f"Error fetching all food items: {e}")
             raise ValueError("Database error when retrieving all food items.")
+        
+    @staticmethod
+    def get_nutrition_fact(food_item_id):
+        try:
+            return db.session.query(NutritionFacts).filter_by(food_item_id=food_item_id).first()
+        except Exception as e:
+            print(f"Database error when retrieving food Nutrition Fact.: {e}")
+            raise ValueError("Unable to getch Nutrition Fact.")
 

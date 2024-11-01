@@ -57,6 +57,18 @@ def get_all_foods():
         return jsonify(all_foods), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/food/<int:food_item_id>/nutrition', methods=['GET'])
+def get_food_nutrition_fact(food_item_id):
+    try:
+        # Call service layer to get nutrition facts
+        nutrition_fact = FoodService.get_food_nutrition_fact(food_item_id)
+        return jsonify({"nutrition_fact": nutrition_fact}), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"message": "Failed to retrieve nutrition facts.", "error": str(e)}), 500
+
 
 
     
