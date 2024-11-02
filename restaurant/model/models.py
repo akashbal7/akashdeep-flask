@@ -39,24 +39,30 @@ class Address(db.Model):
 
 
 class Restaurant(db.Model):
-    __tablename__ = 'restaurants'
+    __tablename__ = 'restaurants'  # Ensure this matches the foreign key reference in ReviewDatabase
+
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     name = Column(String(100), nullable=False)
     address_id = Column(Integer, ForeignKey('addresses.id', ondelete='CASCADE'), nullable=False)
     phone_number = Column(String(15))
-    website = Column(String(255))  # Website field
-    sitting_capacity = Column(Integer)  # Sitting capacity field
-    cuisine = Column(String(100))  # Cuisine type field
+    website = Column(String(255))
+    sitting_capacity = Column(Integer)
+    cuisine = Column(String(100))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     owner = relationship('User', backref=backref('restaurants', cascade='all, delete-orphan'))
     address = relationship('Address', backref=backref('restaurants', cascade='all, delete-orphan'))
+    
+    # Relationship with ReviewDatabase
+    reviews = db.relationship("ReviewDatabase", back_populates="restaurant", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Restaurant {self.name}>'
     
+    
+
 class FoodItem(db.Model):
     __tablename__ = 'food_items'  # Corrected table name
     
