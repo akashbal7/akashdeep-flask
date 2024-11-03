@@ -87,31 +87,69 @@ def edit_address(user_id,address_id):
         logger.exception("Error updating address")
         return jsonify({'error': 'Failed to update address. Please try again later.'}), 500
 
-@review_bp.route('/reviews/<int:restaurant_id>', methods=['GET'])
+
+@review_bp.route('/restaurant/<int:restaurant_id>/review', methods=['GET'])
 def get_reviews(restaurant_id):
     reviews = ReviewService.get_reviews(restaurant_id)
     review_data = [
         {
-            'food_rating': r.food_rating,
-            'service_rating': r.service_rating,
-            'value_rating': r.value_rating,
-            'atmosphere_rating': r.atmosphere_rating,
-            'review_text': r.review_text,
-            'timestamp': r.timestamp  # Assuming timestamp is a field in Review model
+            'rating': r.rating,
+            'review_text': r.review_text
         } for r in reviews
     ]
     return jsonify({'reviews': review_data}), 200
 
-@review_bp.route('/reviews/<int:restaurant_id>', methods=['POST'])
+@review_bp.route('/restaurant/<int:restaurant_id>/review', methods=['POST'])
 def add_review(restaurant_id):
     data = request.json
     review = ReviewService.add_review(
         restaurant_id=restaurant_id,
-        food=data['food_rating'],
-        service=data['service_rating'],
-        value=data['value_rating'],
-        atmosphere=data['atmosphere_rating'],
+        rating=data['rating'],
         review_text=data.get('review_text', '')
     )
     return jsonify({'message': 'Review added successfully', 'review_id': review.id}), 201
 
+@review_bp.route('/food/<int:food_item_id>/review', methods=['POST'])
+def add_food_reviews(food_item_id):
+    data=request.json
+    required_fields = ['rating', 'taste_rating', 'texture_rating', 'quality_rating', 'presentation_rating']
+    missing_fields = [field for field in required_fields if field not in data]
+
+    if missing_fields:
+        return jsonify({'error': f'Missing fields: {", ".join(missing_fields)}'}), 400
+    
+    review = ReviewService.add_food_reviews(
+        food_item_id=food_item_id,
+        rating=data['rating'],
+        taste_rating=data['taste_rating'],
+        texture_rating=data['texture_rating'],
+        quality_rating=data['quality_rating'],
+        presentation_rating=data['presentation_rating'],
+        review_text=data.get('review_text', '')
+    )
+    return jsonify({'message': 'Food review added successfully', 'review_id': review.id}), 201
+
+@review_bp.route('/food/<int:food_item_id>/review', methods=['GET'])
+def get_food_reviews(food_item_id):
+    # Fetch reviews for the specified food item ID
+    reviews = ReviewService.get_food_reviews(food_item_id)
+
+    # If no reviews are found, return a 404 response
+    if not reviews:
+        return jsonify({'message': 'No reviews found for this food item'}), 404
+
+    # Format reviews for JSON response
+    review_list = [
+        {
+            'review_id': review.id,
+            'rating': review.rating,
+            'taste_rating': review.taste_rating,
+            'texture_rating': review.texture_rating,
+            'quality_rating': review.quality_rating,
+            'presentation_rating': review.presentation_rating,
+            'review_text': review.review_text,
+            'created_at': review.created_at.isoformat()  # Assumes you have a timestamp field
+        } for review in reviews
+    ]
+
+    return jsonify({'reviews': review_list}), 200
