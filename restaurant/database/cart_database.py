@@ -69,4 +69,8 @@ class CartDatabase:
         except Exception as e:
             print(f"Error rolling back transaction: {e}")
             raise ValueError("Failed to rollback transaction.")
+        
+    @staticmethod
+    def get_cart_items_by_user(user_id):
+        return CartItem.query.filter_by(customer_id=user_id, order_id=None).all()
 

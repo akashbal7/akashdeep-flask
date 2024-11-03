@@ -36,3 +36,12 @@ def delete_cart_item(user_id, cart_id):
         return jsonify(cart_item), status
     except Exception as e:
         return jsonify({"message": "Failed to delete cart item.", "error": str(e)}), 500
+    
+@cart_bp.route('/user/<int:user_id>/cart', methods=['GET'])
+def get_cart_items(user_id):
+    try:
+        cart_items, status = CartService.get_cart_items_by_user(user_id)
+        return jsonify(cart_items), status
+    except Exception as e:
+        return jsonify({"message": "Failed to retrieve cart items.", "error": str(e)}), 500
+    

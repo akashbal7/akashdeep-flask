@@ -101,9 +101,32 @@ class CartService:
         CartDatabase.commit_transaction()
         
         return {
-                "message": "Cart item deleted successfully.",
-                "data": {
-                    
-                    "customer_id": customer_id
-                }
+                "message": "Cart item not found.",
+                "data": {},
+            }, 404
+        
+    @staticmethod
+    def get_cart_items_by_user(user_id):
+        # Retrieve all cart items for the specified user
+        cart_items = CartDatabase.get_cart_items_by_user(user_id)
+
+        if not cart_items:
+            return {"message": "No items in the cart."}, 404
+
+        # Format the response data
+        formatted_items = [
+            {
+                "id": item.id,
+                "food_item_id": item.food_item_id,
+                "quantity": item.quantity,
+                "added_at": item.created_at.isoformat()  # Format date as ISO string
+            }
+            for item in cart_items
+        ]
+        
+        return {
+                "message": "Cart items retrieved successfully.",
+                "data": formatted_items
             }, 200
+        
+         
