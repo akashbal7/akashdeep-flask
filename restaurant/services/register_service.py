@@ -78,7 +78,7 @@ class UserService:
                 restaurant_id = RestaurantDatabase.add_restaurant(restaurant_data)
                 logger.info(f"restaurant id: {restaurant_id}")
             db.session.commit()
-            return {'message': 'Registration successful'}, 201
+            return {"user_id" : user_id,'message': 'Registration successful'}, 201
         except IntegrityError as e:
             logger.error(f"Integrity error during registration: {e}")
             db.session.rollback()
