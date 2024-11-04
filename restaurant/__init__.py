@@ -43,11 +43,13 @@ def register_blueprints(app):
     from restaurant.route.food_route import food_bp
     from restaurant.route.restaurant_route import restaurant_bp
     from restaurant.route.cart_route import cart_bp
+    from restaurant.route.review_route import review_bp
     
     app.register_blueprint(register_bp)
     app.register_blueprint(food_bp)
     app.register_blueprint(restaurant_bp)
     app.register_blueprint(cart_bp)
+    app.register_blueprint(review_bp)
 
 # Register all blueprints
 register_blueprints(app)

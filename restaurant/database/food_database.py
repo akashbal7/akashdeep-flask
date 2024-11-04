@@ -36,11 +36,11 @@ class FoodDatabase:
             raise
         
     @staticmethod
-    def get_food_item(food_item_id, restaurant_id):
+    def get_food_item(food_item_id):
         try:
             return FoodItem.query.get(food_item_id)
         except Exception as e:
-            print(f"Error retrieving food item with ID {food_item_id} for restaurant {restaurant_id}: {e}")
+            print(f"Error retrieving food item with ID {food_item_id}: {e}")
             raise ValueError("Failed to retrieve food item.")
 
     @staticmethod

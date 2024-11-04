@@ -7,8 +7,6 @@ class RestaurantDatabase:
     def get_restaurant(restaurant_id):
         try:
             restaurant = Restaurant.query.get(restaurant_id)
-            if restaurant is None:
-                raise ValueError(f"Restaurant with id {restaurant_id} not found.")
             return restaurant
         except Exception as e:
             print(f"Error fetching restaurant: {e}")
