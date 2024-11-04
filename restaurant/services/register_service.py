@@ -112,13 +112,15 @@ class UserService:
 
             # Return a success message (and possibly a token or user data)
             result = {
-                'message': 'Login successful',
-                'user_id': user.id, 
+                "message": "Login successfully.",
+                "data":{
+                    'id': user.id, 
                 'role': user.role, 
                 'email': user.email,
                 'first_name':user.first_name,
                 'last_name':user.last_name,
                 'full_name':user.first_name + ' ' + user.last_name
+                }
             }
             return  result, 200
 
