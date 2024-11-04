@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from restaurant.auth_middleware import token_required
 from restaurant.services.food_service import FoodService
 import logging
 
@@ -17,7 +18,8 @@ def add_food_item(restaurant_id):
         return jsonify({"message": "Failed to add food item.", "error": str(e)}), 500
     
 @food_bp.route('/restaurant/<int:restaurant_id>/food/<int:food_item_id>', methods=['GET'])
-def get_food_item(restaurant_id, food_item_id):
+@token_required
+def get_food_item(current_user, restaurant_id, food_item_id):
     try:
         food_item = FoodService.get_food_item(restaurant_id, food_item_id)
         return jsonify(food_item), 200
@@ -42,7 +44,8 @@ def delete_food_item(restaurant_id, food_item_id):
         return jsonify({"message": str(e)}), 500
     
 @food_bp.route('/restaurant/<int:restaurant_id>/foods', methods=['GET'])
-def get_food_list(restaurant_id):
+@token_required
+def get_food_list(current_user, restaurant_id):
     try:
         food_list = FoodService.get_restaurant_food_list(restaurant_id)
         return jsonify({"foods": food_list}), 200

@@ -109,20 +109,7 @@ class UserService:
             # Verify the password
             if not check_password_hash(user.password_hash, password):
                 return {'error': 'Invalid email or password.'}, 401
-
-            # Return a success message (and possibly a token or user data)
-            result = {
-                "message": "Login successfully.",
-                "data":{
-                    'id': user.id, 
-                'role': user.role, 
-                'email': user.email,
-                'first_name':user.first_name,
-                'last_name':user.last_name,
-                'full_name':user.first_name + ' ' + user.last_name
-                }
-            }
-            return  result, 200
+            return user.to_dict()
 
         except Exception as e:
             logger.error(f"Error during login: {e}")

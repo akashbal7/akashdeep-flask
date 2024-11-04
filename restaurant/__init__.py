@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_cors import CORS
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -20,6 +21,9 @@ login_manager.login_view = "login"
 migrate = Migrate(app, db)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'  # Make sure this folder exists
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+SECRET_KEY = os.environ.get('SECRET_KEY') or 'this is a secret'
+print(SECRET_KEY)
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # Import User model after app initialization to avoid circular import issues
 @login_manager.user_loader

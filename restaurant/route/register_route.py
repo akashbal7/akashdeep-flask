@@ -1,8 +1,12 @@
 from flask import Blueprint, request, jsonify
-from restaurant.services.address_service import AddressService
+from restaurant.model.models import User
 from restaurant.services.register_service import UserService
 from restaurant import app
+import jwt
+import os
 import logging
+from ..validate import validate_email_and_password
+
 
 logger = logging.getLogger(__name__)
 register_bp = Blueprint('register_controller', __name__)
@@ -28,9 +32,51 @@ def register():
 def login():
     try:
         data = request.get_json()
+        if not data:
+            return {
+                "message": "Please provide user details",
+                "data": None,
+                "error": "Bad request"
+            }, 400
         logger.info(f"Received Login request for email: {data['email']}")
+        
+        is_validated = validate_email_and_password(data.get('email'), data.get('password'))
+        if is_validated is not True:
+            return dict(message='Invalid data', data=None, error=is_validated), 400
+        
+        print(os.environ.get('SECRET_KEY'))
+        
+        user = UserService.login_user(data)
 
-        result, status_code = UserService.login_user(data)
+        logger.info(f"user: {user}")
+        if user:
+            try:
+                # token should expire after 24 hrs
+                user["token"] = jwt.encode(
+                    {"id": user["id"], "email": user["email"]},
+                    app.config["SECRET_KEY"],
+                    algorithm="HS256"
+                )
+                return {
+                    "message": "Successfully fetched auth token",
+                    "data": user
+                }
+            except Exception as e:
+                return {
+                    "error": "Something went wrong",
+                    "message": str(e)
+                }, 500
+        return {
+            "message": "Error fetching auth token!, invalid email or password",
+            "data": None,
+            "error": "Unauthorized"
+        }, 404
+    except Exception as e:
+        return {
+                "message": "Something went wrong!",
+                "error": str(e),
+                "data": None
+        }, 500
 
         return jsonify(result), status_code
 

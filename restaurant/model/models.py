@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, DECIMAL, Text, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -15,6 +16,19 @@ class User(db.Model, UserMixin):
     role = Column(String(20), nullable=False)
     status = Column(String(20), nullable=False, default='active')
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    def to_dict(self):
+        """Convert the User object to a dictionary."""
+        return {
+            "id": self.id,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "role": self.role,
+            "full_name": self.first_name + " " + self.last_name,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
     #phone_number = db.Column(db.String(10), nullable=True, 
     #info={'check': 'LENGTH(phone_number) = 10 OR phone_number IS NULL'})
     
@@ -22,6 +36,31 @@ class User(db.Model, UserMixin):
         CheckConstraint("role IN ('customer', 'owner')", name='check_role'),
         CheckConstraint("status IN ('active', 'inactive', 'suspended')", name='check_status')
     )
+    
+    def get_by_email(self, email):
+        """Get a user by email"""
+        user = db.users.find_one({"email": email, "active": True})
+        if not user:
+            return
+        user["_id"] = str(user["id"])
+        return user
+    
+    def login(self, email, password):
+        """Login a user"""
+        user = self.get_by_email(email)
+        if not user or not check_password_hash(user["password"], password):
+            return
+        user.pop("password")
+        return user
+    
+    def get_by_id(self, user_id):
+        """Get a user by id"""
+        user = db.users.find_one({"id": user_id, "active": True})
+        if not user:
+            return
+        user["id"] = str(user["id"])
+        user.pop("password")
+        return user
 
     def __repr__(self):
         return f'<User {self.email}, {self.first_name}, {self.last_name}, {self.role}, {self.status}>'
@@ -39,6 +78,8 @@ class Address(db.Model):
 
     def __repr__(self):
         return f'<Address {self.address_line_1}, {self.city}>'
+    
+    
 
 
 class Restaurant(db.Model):
