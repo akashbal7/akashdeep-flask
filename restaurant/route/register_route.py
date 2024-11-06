@@ -44,8 +44,6 @@ def login():
         if is_validated is not True:
             return dict(message='Invalid data', data=None, error=is_validated), 400
         
-        print(os.environ.get('SECRET_KEY'))
-        
         user = UserService.login_user(data)
 
         logger.info(f"user: {user}")
@@ -67,22 +65,17 @@ def login():
                     "message": str(e)
                 }, 500
         return {
-            "message": "Error fetching auth token!, invalid email or password",
+            "message": "Invalid email or password",
             "data": None,
             "error": "Unauthorized"
         }, 404
     except Exception as e:
+        logger.error(f"Error during login: {e}")
         return {
                 "message": "Something went wrong!",
                 "error": str(e),
                 "data": None
         }, 500
-
-        return jsonify(result), status_code
-
-    except Exception as e:
-        logger.exception("Login error")
-        return jsonify({'error': 'Login failed. Please try again.'}), 500
     
 
 @register_bp.route('/user/<int:user_id>', methods=['GET'])
@@ -95,7 +88,6 @@ def get_user(user_id):
             return jsonify({'error': 'User not found.'}), 404
 
         return jsonify(user_data), status_code
-
     except Exception as e:
         logger.exception("Error retrieving user by ID")
         return jsonify({'error': 'Failed to retrieve user. Please try again later.'}), 500

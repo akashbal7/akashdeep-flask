@@ -47,7 +47,6 @@ class RestaurantDatabase:
     def update_restaurant(restaurant):
         try:
             db.session.add(restaurant)
-            RestaurantDatabase.commit_transaction()
             print(f"Restaurant {restaurant.name} updated successfully.")
         except Exception as e:
             db.session.rollback()

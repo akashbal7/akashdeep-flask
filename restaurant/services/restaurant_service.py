@@ -17,12 +17,12 @@ class RestaurantService:
             restaurant.name = data.get('restaurant_name', restaurant.name)
             restaurant.phone_number = data.get('phone_number', restaurant.phone_number)
             restaurant.website = data.get('website', restaurant.website)
+            restaurant.about = data.get('about', restaurant.about)
             restaurant.sitting_capacity = data.get('sitting_capacity', restaurant.sitting_capacity)
-            restaurant.cuisine = data.get('cuisine', restaurant.cuisine)
 
             # Update user details (owner)
             user = UserDatabase.get_user_by_id(restaurant.owner_id)
-            if not restaurant:
+            if not user:
                 raise ValueError("User not found.")
             if user:
                 user.first_name = data.get('first_name', user.first_name)

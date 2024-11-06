@@ -1,10 +1,14 @@
-from restaurant.model.models import db, User
+from restaurant.model.models import db, User, Restaurant
 
 
 class UserDatabase:
     @staticmethod
     def get_user_by_email(email):
         return User.query.filter_by(email=email).first()
+    
+    @staticmethod
+    def get_restaurant_by_user_id(user_id):
+        return Restaurant.query.filter_by(owner_id=user_id).first()
 
     @staticmethod
     def add_user(user_data):
@@ -35,3 +39,12 @@ class UserDatabase:
             db.session.commit()
             return True
         return False
+    
+    @staticmethod
+    def commit_transaction():
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Transaction commit failed: {e}")
+            raise

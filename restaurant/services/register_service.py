@@ -104,12 +104,16 @@ class UserService:
             user = UserDatabase.get_user_by_email(email)
 
             if not user:
-                return {'error': 'Invalid email or password.'}, 401
+                return None
 
             # Verify the password
             if not check_password_hash(user.password_hash, password):
                 return {'error': 'Invalid email or password.'}, 401
-            return user.to_dict()
+            user_dict = user.to_dict()
+            if user_dict['role'] == "owner":
+                restaurant = UserDatabase.get_restaurant_by_user_id(user.id)
+                user_dict['restaurant_id'] = restaurant.id if restaurant else None
+            return user_dict
 
         except Exception as e:
             logger.error(f"Error during login: {e}")
@@ -124,20 +128,11 @@ class UserService:
                 return None, 404
             
             # Create a dictionary with user details to return
-            user_data = {
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role
-                #'phone_number': user.phone_number,
-                # Add other fields as necessary
-            }
+            user_data = user.to_dict()
 
              # If the user is an owner, get their restaurant data
-            if user.role == 'owner':
+            if user_data['role'] == 'owner':
                 restaurant = RestaurantDatabase.get_restaurant_by_owner_id(user.id)
-                print("ressssssssss",restaurant.address_id)
                 address = AddressDatabase.get_address_by_id(restaurant.address_id)
                 if restaurant:
                     user_data['restaurant'] = {
@@ -146,16 +141,9 @@ class UserService:
                         'phone_number': restaurant.phone_number,
                         'website': restaurant.website,
                         'sitting_capacity': restaurant.sitting_capacity,
+                        'about': restaurant.about,
                         'cuisine': restaurant.cuisine,
-                        'address': {
-                            'id': address.id,
-                            'address_line_1': address.address_line_1,
-                            'address_line_2': address.address_line_2,
-                            'city': address.city,
-                            'state': address.state,
-                            'postal_code': address.postal_code,
-                            'country': address.country,
-                        }
+                        'address': address.to_dict()
                     }
 
             return user_data, 200
@@ -178,11 +166,15 @@ class UserService:
         if 'phone_number' in data:
             user.phone_number = data['phone_number']
 
-        # Commit the changes to the database
-        print("hhhhhhhhh",user)
         try:
             UserDatabase.update_user(user)
-            return {'message': 'User updated successfully.'}, 200
+            UserDatabase.commit_transaction()
+            
+            return {
+                    "message": "User updated successfully.",
+                    "data": user.to_dict()
+                }, 200
+        
         except Exception as e:
             logger.error(f"Error updating user: {e}")
             db.session.rollback()

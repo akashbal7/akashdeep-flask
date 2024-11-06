@@ -39,7 +39,6 @@ class FoodService:
 
             # Add food item to the database and flush to get the ID
             FoodDatabase.add_food_item(food_item)
-
             # Optionally add nutrition facts
             if data.get('nutrition_fact'):
                 nutrition_data = data.get('nutrition_fact', {})
@@ -64,8 +63,11 @@ class FoodService:
                     sugars_g=nutrition_data.get('sugars'),
                     protein_g=nutrition_data.get('protein')
                 )
+                for key, value in nutrition_facts.items():
+                    if value == '':
+                        nutrition_facts[key] = None
 
-               
+            
 
 
                 # Add nutrition facts to the database

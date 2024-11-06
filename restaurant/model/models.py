@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     last_name = Column(String(50), nullable=False)
     role = Column(String(20), nullable=False)
     status = Column(String(20), nullable=False, default='active')
+    phone_number = Column(String(10), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     def to_dict(self):
@@ -27,6 +28,7 @@ class User(db.Model, UserMixin):
             "role": self.role,
             "full_name": self.first_name + " " + self.last_name,
             "status": self.status,
+            "phone_number": self.phone_number,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
     #phone_number = db.Column(db.String(10), nullable=True, 
@@ -34,7 +36,9 @@ class User(db.Model, UserMixin):
     
     __table_args__ = (
         CheckConstraint("role IN ('customer', 'owner')", name='check_role'),
-        CheckConstraint("status IN ('active', 'inactive', 'suspended')", name='check_status')
+        CheckConstraint("status IN ('active', 'inactive', 'suspended')", name='check_status'),
+        CheckConstraint("LENGTH(phone_number) = 10 OR phone_number IS NULL", name='check_phone_number_length')
+        
     )
     
     def get_by_email(self, email):
@@ -75,12 +79,22 @@ class Address(db.Model):
     postal_code = Column(String(20))
     country = Column(String(100))
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "address_line_1": self.address_line_1,
+            "address_line_2": self.address_line_2,
+            "city": self.city,
+            "state": self.state,
+            "postal_code": self.postal_code,
+            "country": self.country,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
 
     def __repr__(self):
         return f'<Address {self.address_line_1}, {self.city}>'
     
-    
-
 
 class Restaurant(db.Model):
     __tablename__ = 'restaurants'
@@ -92,11 +106,26 @@ class Restaurant(db.Model):
     website = Column(String(255))  # Website field
     sitting_capacity = Column(Integer)  # Sitting capacity field
     cuisine = Column(String(100))  # Cuisine type field
+    about = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     owner = relationship('User', backref=backref('restaurants', cascade='all, delete-orphan'))
     address = relationship('Address', backref=backref('restaurants', cascade='all, delete-orphan'))
+    
+    def to_dict(self):
+        """Convert the Restaurant object to a dictionary."""
+        return {
+            "id": self.id,
+            "owner_id": self.owner_id,
+            "name": self.name,
+            "address_id": self.address_id,
+            "phone_number": self.phone_number,
+            "website": self.website,
+            "sitting_capacity": self.sitting_capacity,
+            "cuisine": self.cuisine,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
 
     def __repr__(self):
         return f'<Restaurant {self.name}>'
