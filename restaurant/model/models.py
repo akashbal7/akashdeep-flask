@@ -140,6 +140,8 @@ class FoodItem(db.Model):
     price = Column(Float, nullable=False)
     availability = Column(Boolean, default=True)
     category = Column(String(50), nullable=False)
+    image_filename = Column(String(200), nullable=True)
+    has_nutrition_fact = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     nutrition_facts = relationship('NutritionFacts', backref='food_item', uselist=False)
     

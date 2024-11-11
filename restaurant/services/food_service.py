@@ -1,13 +1,14 @@
 from restaurant.database.food_database import FoodDatabase
-import logging, os
+import logging, os, base64
 from werkzeug.utils import secure_filename
 from restaurant.model.models import FoodItem, NutritionFacts
+from flask import request, jsonify, current_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-UPLOAD_FOLDER = '../static/uploads'  # Ensure this folder exists
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 
 
 class FoodService:
@@ -18,14 +19,21 @@ class FoodService:
     
     @staticmethod
     def add_food_item(data, restaurant_id, image_file):
+        print("data", data)
         try:
+            has_nutrition_fact = data.get('has_nutrition_fact', 'false').lower() == 'true'
+            availability = data.get('in_stock', 'false').lower() == 'true'
+            upload_folder = current_app.config['UPLOAD_FOLDER']
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+            image_filename = ""
             
             if image_file and FoodService.allowed_file(image_file.filename):
-                filename = secure_filename(image_file.filename)
-                print("filename", filename)
-                image_path = os.path.join(UPLOAD_FOLDER, filename)
-                print("image_path", image_path)
+                image_filename = secure_filename(image_file.filename)
+                # Use current_app to get the UPLOAD_FOLDER configuration
+                image_path = os.path.join(upload_folder, image_filename)
                 image_file.save(image_path)  # Save the image file
+                print("image_path", image_path)
             
             # Create FoodItem object
             food_item = FoodItem(
@@ -33,14 +41,17 @@ class FoodService:
                 name=data['name'],
                 description=data.get('description'),
                 price=data['price'],
-                category=data.get('category'),
-                availability=data.get('in_stock', True)
+                category=data['category'],
+                availability=availability,
+                has_nutrition_fact=has_nutrition_fact,
+                image_filename=image_filename
             )
 
             # Add food item to the database and flush to get the ID
             FoodDatabase.add_food_item(food_item)
-            # Optionally add nutrition facts
-            if data.get('nutrition_fact'):
+            print(data['nutrition_fact'])
+            # # Optionally add nutrition facts
+            if has_nutrition_fact:
                 nutrition_data = data.get('nutrition_fact', {})
                 nutrition_facts = NutritionFacts(
                     food_item_id=food_item.id,
@@ -96,7 +107,8 @@ class FoodService:
                     "description": food_item.description,
                     "price": food_item.price,
                     "category": food_item.category,
-                    "in_stock": food_item.availability,
+                    "in_stock": food_item.in_stock,
+                    "has_nutrition_fact": food_item.has_nutrition_fact,
                 }
                 nutrition_fact = FoodDatabase.get_nutrition_fact(food_item_id)
                 if nutrition_fact:  # Changed from plural to singular
@@ -239,19 +251,27 @@ class FoodService:
     @staticmethod
     def get_all_foods(category):
         try:
+            upload_folder = current_app.config['UPLOAD_FOLDER']
             food_items = FoodDatabase.get_all_foods(category)
-            all_foods = [
-                {
+            all_foods = []
+            for food_item in food_items:
+                if food_item.image_filename:
+                    with open(f"{upload_folder}/{food_item.image_filename}", "rb") as img_file:
+                        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+                else:
+                    encoded_image = None
+
+                all_foods.append({
                     "id": food_item.id,
                     "restaurant_id": food_item.restaurant_id,
                     "name": food_item.name,
                     "description": food_item.description,
                     "price": food_item.price,
                     "category": food_item.category,
-                    "in_stock": food_item.availability
-                }
-                for food_item in food_items
-            ]
+                    "in_stock": food_item.availability,
+                    "has_nutrition_fact": food_item.has_nutrition_fact,
+                    "image_data": encoded_image  # Send Base64 data
+                })
 
             # Return all food items with the total count
             return {"foods": all_foods, "total_count": len(all_foods)}

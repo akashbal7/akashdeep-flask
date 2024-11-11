@@ -3,6 +3,7 @@ from restaurant.auth_middleware import token_required
 from restaurant.services.food_service import FoodService
 import logging
 
+
 logger = logging.getLogger(__name__)
 food_bp = Blueprint('food_controller', __name__)
 
@@ -10,7 +11,6 @@ food_bp = Blueprint('food_controller', __name__)
 def add_food_item(restaurant_id):
     data = request.form  # Use request.form for form data and file uploads
     image_file = request.files.get('image')
-    data = request.get_json()
     try:
         food_item = FoodService.add_food_item(data, restaurant_id, image_file)
         return jsonify({"message": "Food item added successfully.", "food_item_id": food_item.id}), 201

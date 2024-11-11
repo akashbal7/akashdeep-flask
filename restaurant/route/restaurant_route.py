@@ -12,11 +12,11 @@ def update_restaurant(restaurant_id):
     data = request.get_json()
     try:
         updated_restaurant = RestaurantService.update_restaurant(data, restaurant_id)
-        return jsonify({"message": "Restaurant updated successfully.", "restaurant_id": updated_restaurant.id}), 200
+        return jsonify({"message": "Profile updated successfully.", "restaurant_id": updated_restaurant.id}), 200
     except ValueError as e:
         return jsonify({"message": str(e)}), 404
     except Exception as e:
-        return jsonify({"message": "Failed to update restaurant.", "error": str(e)}), 500
+        return jsonify({"message": "Failed to update profile.", "error": str(e)}), 500
     
 @restaurant_bp.route('/restaurant/<int:restaurant_id>/address/<int:address_id>', methods=['PUT'])
 def edit_address(restaurant_id, address_id):

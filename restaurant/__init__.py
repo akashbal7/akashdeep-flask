@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 # Load configuration from config.py
 app.config.from_pyfile('../config.py')
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'images')
 
 # Initialize extensions
 db = SQLAlchemy(app)
