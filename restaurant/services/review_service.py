@@ -1,6 +1,7 @@
 from restaurant.database.review_database import ReviewDatabase
 from restaurant.database.restaurant_database import RestaurantDatabase
 from restaurant.database.food_database import FoodDatabase
+from restaurant.database.user_database import UserDatabase
 import logging
 
 logger = logging.getLogger(__name__)
@@ -140,8 +141,11 @@ class ReviewService:
             reviews = ReviewDatabase.get_reviews_by_food(food_item_id)
 
             # Format response data
-            reviews_data = [
-                {
+            reviews_data = []
+
+            for review in reviews:
+                user_data = UserDatabase.get_user_by_id(review.customer_id)
+                review_dict = {
                     "id": review.id,
                     "customer_id": review.customer_id,
                     "food_item_id": review.food_item_id,
@@ -151,10 +155,10 @@ class ReviewService:
                     "quality_rating": review.quality_rating,
                     "presentation_rating": review.presentation_rating,
                     "review_text": review.review_text,
-                    "created_at": review.created_at
+                    "created_at": review.created_at.isoformat() if review.created_at else None,  # Optional: formatting date
+                    "customer": user_data.to_dict() if user_data else None  # Ensure customer data exists
                 }
-                for review in reviews
-            ]
+                reviews_data.append(review_dict)
 
             return {
                 "message": "Food reviews retrieved successfully.",

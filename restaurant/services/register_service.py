@@ -269,7 +269,7 @@ class UserService:
     @staticmethod
     def get_food_item(restaurant_id, food_item_id):
         try:
-            food_item = FoodDatabase.get_food_item(food_item_id, restaurant_id)
+            food_item = FoodDatabase.get_food_item(food_item_id)
             if not food_item:
                 raise ValueError("Food item not found.")
             if food_item:
@@ -298,7 +298,7 @@ class UserService:
     @staticmethod
     def update_food_item(data, restaurant_id, food_item_id):
         try:
-            food_item = FoodDatabase.get_food_item(food_item_id, restaurant_id)
+            food_item = FoodDatabase.get_food_item(food_item_id)
             if not food_item:
                 raise ValueError("Food item not found.")
 
@@ -371,7 +371,7 @@ class UserService:
     @staticmethod
     def delete_food_item(restaurant_id, food_item_id):
         try:
-            food_item = FoodDatabase.get_food_item(food_item_id, restaurant_id)
+            food_item = FoodDatabase.get_food_item(food_item_id)
             if not food_item:
                 raise ValueError("Food item not found.")
 

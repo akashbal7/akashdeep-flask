@@ -36,7 +36,7 @@ class FoodDatabase:
             raise
         
     @staticmethod
-    def get_food_item(food_item_id, restaurant_id):
+    def get_food_item(food_item_id):
         try:
             return FoodItem.query.get(food_item_id)
         except Exception as e:

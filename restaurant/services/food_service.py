@@ -2,7 +2,7 @@ from restaurant.database.food_database import FoodDatabase
 import logging, os, base64
 from werkzeug.utils import secure_filename
 from restaurant.model.models import FoodItem, NutritionFacts
-from flask import request, jsonify, current_app
+from flask import json, request, jsonify, current_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class FoodService:
                 restaurant_id=restaurant_id,
                 name=data['name'],
                 description=data.get('description'),
-                price=data['price'],
+                price=float(data['price']),
                 category=data['category'],
                 availability=availability,
                 has_nutrition_fact=has_nutrition_fact,
@@ -52,31 +52,25 @@ class FoodService:
             print(data['nutrition_fact'])
             # # Optionally add nutrition facts
             if has_nutrition_fact:
-                nutrition_data = data.get('nutrition_fact', {})
+                nutrition_data = json.loads(data.get('nutrition_fact', '{}'))
                 nutrition_facts = NutritionFacts(
                     food_item_id=food_item.id,
                     serving_size=nutrition_data.get('serving_size'),
                     calories=nutrition_data.get('calories'),
                     calories_from_fat=nutrition_data.get('calories_from_fat'),
                     total_fat_g=nutrition_data.get('total_fat'),
-                    total_fat_percent=nutrition_data.get('total_fat_percent'),
                     saturated_fat_g=nutrition_data.get('saturated_fat'),
-                    saturated_fat_percent=nutrition_data.get('saturated_fat_percent'),
                     trans_fat_g=nutrition_data.get('trans_fat'),
                     cholesterol_mg=nutrition_data.get('cholesterol'),
-                    cholesterol_percent=nutrition_data.get('cholesterol_percent'),
                     sodium_mg=nutrition_data.get('sodium'),
-                    sodium_percent=nutrition_data.get('sodium_percent'),
                     total_carbohydrate_g=nutrition_data.get('total_carbohydrate'),
-                    carbohydrate_percent=nutrition_data.get('carbohydrate_percent'),
                     dietary_fiber_g=nutrition_data.get('dietary_fiber'),
-                    fiber_percent=nutrition_data.get('fiber_percent'),
                     sugars_g=nutrition_data.get('sugars'),
                     protein_g=nutrition_data.get('protein')
                 )
-                for key, value in nutrition_facts.items():
+                for attr, value in nutrition_facts.__dict__.items():
                     if value == '':
-                        nutrition_facts[key] = None
+                        setattr(nutrition_facts, attr, None)
 
             
 
@@ -107,7 +101,7 @@ class FoodService:
                     "description": food_item.description,
                     "price": food_item.price,
                     "category": food_item.category,
-                    "in_stock": food_item.in_stock,
+                    "in_stock": food_item.availability,
                     "has_nutrition_fact": food_item.has_nutrition_fact,
                 }
                 nutrition_fact = FoodDatabase.get_nutrition_fact(food_item_id)
@@ -126,7 +120,7 @@ class FoodService:
     @staticmethod
     def update_food_item(data, restaurant_id, food_item_id):
         try:
-            food_item = FoodDatabase.get_food_item(food_item_id, restaurant_id)
+            food_item = FoodDatabase.get_food_item(food_item_id)
             if not food_item:
                 raise ValueError("Food item not found.")
 
@@ -199,7 +193,7 @@ class FoodService:
     @staticmethod
     def delete_food_item(restaurant_id, food_item_id):
         try:
-            food_item = FoodDatabase.get_food_item(food_item_id, restaurant_id)
+            food_item = FoodDatabase.get_food_item(food_item_id)
             if not food_item:
                 print("innnnnnn")
                 raise ValueError("Food item not found.")

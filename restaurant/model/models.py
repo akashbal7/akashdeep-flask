@@ -277,6 +277,21 @@ class FoodReview(db.Model):
 
     def __repr__(self):
         return f'<FoodReview {self.id}, Customer {self.customer_id}, Rating {self.rating}>'
+    
+    def to_dict(self):
+        """Convert the FoodReview instance to a dictionary for easy JSON serialization."""
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "food_item_id": self.food_item_id,
+            "rating": self.rating,
+            "taste_rating": self.taste_rating,
+            "texture_rating": self.texture_rating,
+            "quality_rating": self.quality_rating,
+            "presentation_rating": self.presentation_rating,
+            "review_text": self.review_text,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
 
 class RestaurantReview(db.Model):
     __tablename__ = 'restaurant_reviews'
