@@ -2,7 +2,9 @@ from restaurant.database.review_database import ReviewDatabase
 from restaurant.database.restaurant_database import RestaurantDatabase
 from restaurant.database.food_database import FoodDatabase
 from restaurant.database.user_database import UserDatabase
+from datetime import datetime
 import logging
+import humanize
 
 logger = logging.getLogger(__name__)
 
@@ -59,19 +61,24 @@ class ReviewService:
             }, 404
             
             reviews = ReviewDatabase.get_reviews_by_restaurant(restaurant_id)
-
+            reviews_data = []
             # Prepare the response data
-            reviews_data = [
-                {
-                    "id": review.id,
-                    "customer_id": review.customer_id,
-                    "restaurant_id": review.restaurant_id,
-                    "rating": review.rating,
-                    "review_text": review.review_text,
-                    "created_at": review.created_at
-                }
-                for review in reviews
-            ]
+            for review in reviews:
+                user_data = UserDatabase.get_user_by_id(review.customer_id)
+                review_dict = {
+                        "id": review.id,
+                        "customer_id": review.customer_id,
+                        "restaurant_id": review.restaurant_id,
+                        "rating": review.rating,
+                        "review_text": review.review_text,
+                        "created_at": ReviewService.time_ago(review.created_at),
+                        "customer": user_data.to_dict() if user_data else None,  # Ensure customer data exists
+                        
+                        
+                    }
+                reviews_data.append(review_dict)
+                    
+                
 
             return {
                 "message": "Restaurant reviews retrieved successfully.",
@@ -155,7 +162,7 @@ class ReviewService:
                     "quality_rating": review.quality_rating,
                     "presentation_rating": review.presentation_rating,
                     "review_text": review.review_text,
-                    "created_at": review.created_at.isoformat() if review.created_at else None,  # Optional: formatting date
+                    "created_at": ReviewService.time_ago(review.created_at),  # Optional: formatting date
                     "customer": user_data.to_dict() if user_data else None  # Ensure customer data exists
                 }
                 reviews_data.append(review_dict)
@@ -171,3 +178,60 @@ class ReviewService:
                 "message": "Failed to retrieve food reviews. Please try again.",
                 "data": {}
             }, 500
+            
+    @staticmethod
+    def get_restaurant_food_reviews(restaurant_id):
+        try:
+            # Retrieve reviews from the database
+            if not RestaurantDatabase.get_restaurant(restaurant_id):
+                 return {
+                "message": "Restaurant not found.",
+                "data": []
+            }, 404
+                
+            reviews = ReviewDatabase.get_food_reviews_by_restaurant(restaurant_id)
+            print("reviewsssssssss", reviews)
+
+            # Format response data
+            reviews_data = []
+
+            for review, food_item in reviews:
+                user_data = UserDatabase.get_user_by_id(review.customer_id)
+                review_dict = {
+                    "id": review.id,
+                    "customer_id": review.customer_id,
+                    "food_item_id": review.food_item_id,
+                    "rating": review.rating,
+                    "taste_rating": review.taste_rating,
+                    "texture_rating": review.texture_rating,
+                    "quality_rating": review.quality_rating,
+                    "presentation_rating": review.presentation_rating,
+                    "review_text": review.review_text,
+                    "created_at": ReviewService.time_ago(review.created_at),
+                    "food_item": {
+                        "id": food_item.id,
+                        "name": food_item.name,
+                        "description": food_item.description,
+                        "price": food_item.price,
+                        "category": food_item.category,
+                        "in_stock": food_item.availability
+                    },
+                    "customer": user_data.to_dict() if user_data else None
+                }
+                reviews_data.append(review_dict)
+
+            return {
+                "message": "Food reviews retrieved successfully.",
+                "data": reviews_data
+            }, 200
+
+        except Exception as e:
+            print(f"Failed to retrieve food reviews: {e}")
+            return {
+                "message": "Failed to retrieve food reviews. Please try again.",
+                "data": {}
+            }, 500
+         
+    @staticmethod      
+    def time_ago(posted_date):
+        return humanize.naturaltime(datetime.now() - posted_date)

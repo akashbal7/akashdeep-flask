@@ -10,6 +10,7 @@ import os
 app = Flask(__name__)
 
 
+app.config['DEBUG'] = True
 # Load configuration from config.py
 app.config.from_pyfile('../config.py')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'images')
@@ -49,12 +50,14 @@ def register_blueprints(app):
     from restaurant.route.restaurant_route import restaurant_bp
     from restaurant.route.cart_route import cart_bp
     from restaurant.route.review_route import review_bp
+    from restaurant.route.category_route import category_bp
     
     app.register_blueprint(register_bp)
     app.register_blueprint(food_bp)
     app.register_blueprint(restaurant_bp)
     app.register_blueprint(cart_bp)
     app.register_blueprint(review_bp)
+    app.register_blueprint(category_bp)
 
 # Register all blueprints
 register_blueprints(app)

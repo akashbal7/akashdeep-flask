@@ -1,10 +1,27 @@
 from restaurant import db
 from flask_login import UserMixin
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, DECIMAL, Text, CheckConstraint
+from sqlalchemy import Column, Integer, String,Table, Float, Boolean, DateTime, ForeignKey, DECIMAL, Text, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
+
+# Junction table for many-to-many relationship between Restaurant and Category
+restaurant_category_table = Table(
+    'restaurant_category',
+    db.Model.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('restaurant_id', Integer, ForeignKey('restaurants.id', ondelete='CASCADE')),
+    Column('category_id', Integer, ForeignKey('categories.id', ondelete='CASCADE'))
+)
+
+category_food_table = Table(
+    'category_food',
+    db.Model.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('food_id', Integer, ForeignKey('food_items.id', ondelete='CASCADE')),
+    Column('category_id', Integer, ForeignKey('categories.id', ondelete='CASCADE'))
+)
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -112,6 +129,8 @@ class Restaurant(db.Model):
     # Relationships
     owner = relationship('User', backref=backref('restaurants', cascade='all, delete-orphan'))
     address = relationship('Address', backref=backref('restaurants', cascade='all, delete-orphan'))
+    categories = relationship('Category', secondary=restaurant_category_table, back_populates='restaurants')
+    
     
     def to_dict(self):
         """Convert the Restaurant object to a dictionary."""
@@ -145,6 +164,8 @@ class FoodItem(db.Model):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     nutrition_facts = relationship('NutritionFacts', backref='food_item', uselist=False)
     
+    categories = relationship('Category', secondary=category_food_table, back_populates='food_items')
+    
     def to_dict(self):
         return {
             "id": self.id,
@@ -155,6 +176,26 @@ class FoodItem(db.Model):
             "category": self.category,
             "availability": self.availability,
         }
+        
+class Category(db.Model):
+    __tablename__ = 'categories'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    
+    # Relationship to FoodItem via category_food table
+    food_items = relationship('FoodItem', secondary=category_food_table, back_populates='categories')
+    restaurants = relationship('Restaurant', secondary=restaurant_category_table, back_populates='categories')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description
+        }
+
+
 
 class NutritionFacts(db.Model):
     __tablename__ = 'nutrition_facts'

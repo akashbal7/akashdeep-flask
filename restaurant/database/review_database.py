@@ -1,4 +1,4 @@
-from restaurant.model.models import db, RestaurantReview, FoodReview
+from restaurant.model.models import FoodItem, db, RestaurantReview, FoodReview
 
 
 class ReviewDatabase:
@@ -41,6 +41,12 @@ class ReviewDatabase:
     @staticmethod
     def get_reviews_by_food(food_item_id):
         return FoodReview.query.filter_by(food_item_id=food_item_id).all()
+    
+    @staticmethod
+    def get_food_reviews_by_restaurant(restaurant_id):
+        # Query to get all reviews for the specified restaurant
+        reviews = db.session.query(FoodReview, FoodItem).join(FoodItem).filter(FoodItem.restaurant_id == restaurant_id).all()
+        return reviews
 
     @staticmethod
     def commit_transaction():

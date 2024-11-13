@@ -42,6 +42,19 @@ class RestaurantDatabase:
             db.session.rollback()
             print(f"Error adding restaurant: {e}")
             raise
+        
+    @staticmethod
+    def get_restaurant_categories(restaurant_id):
+        try:
+            restaurant = Restaurant.query.get(restaurant_id)
+            if restaurant:
+                # Use the `categories` relationship to retrieve all categories for this restaurant
+                return restaurant.categories
+            else:
+                raise ValueError("Restaurant not found.")
+        except Exception as e:
+            print(f"Failed to retrieve categories for restaurant {restaurant_id}: {e}")
+            raise ValueError("Failed to retrieve categories.")
 
     @staticmethod
     def update_restaurant(restaurant):

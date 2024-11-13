@@ -31,6 +31,13 @@ def add_food_review(food_item_id):
 def get_food_reviews(food_item_id):
     response, status_code = ReviewService.get_food_reviews(food_item_id)
     return jsonify(response), status_code
+
+
+
+@review_bp.route('/restaurant/<int:restaurant_id>/food/reviews', methods=['GET'])
+def get_restaurant_food_reviews(restaurant_id):
+    response, status_code = ReviewService.get_restaurant_food_reviews(restaurant_id)
+    return jsonify(response), status_code
     
 
     
