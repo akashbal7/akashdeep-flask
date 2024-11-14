@@ -9,9 +9,10 @@ restaurant_bp = Blueprint('restaurant_controller', __name__)
 
 @restaurant_bp.route('/restaurant/<int:restaurant_id>', methods=['PUT'])
 def update_restaurant(restaurant_id):
-    data = request.get_json()
+    data = request.form
+    image_file = request.files.get('image')
     try:
-        updated_restaurant = RestaurantService.update_restaurant(data, restaurant_id)
+        updated_restaurant = RestaurantService.update_restaurant(data, restaurant_id, image_file)
         return jsonify({"message": "Profile updated successfully.", "restaurant_id": updated_restaurant.id}), 200
     except ValueError as e:
         return jsonify({"message": str(e)}), 404
@@ -31,3 +32,21 @@ def edit_address(restaurant_id, address_id):
     except Exception as e:
         logger.exception("Error updating address")
         return jsonify({'error': 'Failed to update address. Please try again later.'}), 500
+    
+@restaurant_bp.route('/restaurants', methods=['GET'])
+def get_all_restaurants():
+    try:
+        result, status_code = RestaurantService.get_restaurants()
+        return jsonify(result), status_code
+    except Exception as e:
+        logger.exception("Error fetching restaurants")
+        return jsonify({'error': 'Failed to fetching restaurants. Please try again later.'}), 500
+    
+@restaurant_bp.route('/restaurant/<int:restaurant_id>', methods=['GET'])
+def get_restaurant(restaurant_id):
+    try:
+        result, status_code = RestaurantService.get_restaurant(restaurant_id)
+        return jsonify(result), status_code
+    except Exception as e:
+        logger.exception("Error fetching restaurant", {e})
+        return jsonify({'error': 'Failed to fetching restaurants. Please try again later.'}), 500

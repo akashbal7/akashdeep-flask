@@ -1,7 +1,7 @@
 from restaurant.database.food_database import FoodDatabase
 import logging, os, base64
 from werkzeug.utils import secure_filename
-from restaurant.model.models import FoodItem, NutritionFacts
+from restaurant.model.models import FoodItem, NutritionFacts, Category
 from flask import json, request, jsonify, current_app
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +41,6 @@ class FoodService:
                 name=data['name'],
                 description=data.get('description'),
                 price=float(data['price']),
-                category=data['category'],
                 availability=availability,
                 has_nutrition_fact=has_nutrition_fact,
                 image_filename=image_filename
@@ -77,6 +76,11 @@ class FoodService:
 
                 # Add nutrition facts to the database
                 FoodDatabase.add_nutrition_facts(nutrition_facts)
+                
+            category_ids = json.loads(data.get('categories', '[]'))
+            if category_ids:
+                categories = Category.query.filter(Category.id.in_(category_ids)).all()
+                food_item.categories.extend(categories)
 
             # Commit the transaction
             FoodDatabase.commit_transaction()
@@ -90,7 +94,24 @@ class FoodService:
     @staticmethod
     def get_food_item(restaurant_id, food_item_id):
         try:
+            reviews=[]
+            total_reviews = None
+            average_rating = None
+            texture_rating = None
+            quality_rating = None
+            presentation_rating = None
+            taste_rating = None
             food_item = FoodDatabase.get_food_item(food_item_id)
+            reviews = [review.to_dict() for review in food_item.reviews]
+            if reviews:
+                total_reviews = len(reviews)
+                if total_reviews > 0:
+                    average_rating = sum(review['rating'] for review in reviews) / total_reviews
+                    texture_rating = sum(review['texture_rating'] for review in reviews) / total_reviews
+                    quality_rating = sum(review['quality_rating'] for review in reviews) / total_reviews
+                    presentation_rating = sum(review['presentation_rating'] for review in reviews) / total_reviews
+                    taste_rating = sum(review['taste_rating'] for review in reviews) / total_reviews
+                
             if not food_item:
                 raise ValueError("Food item not found.")
             if food_item:
@@ -100,9 +121,15 @@ class FoodService:
                     "name": food_item.name,
                     "description": food_item.description,
                     "price": food_item.price,
-                    "category": food_item.category,
                     "in_stock": food_item.availability,
                     "has_nutrition_fact": food_item.has_nutrition_fact,
+                    "total_reviews": total_reviews,
+                    "average_rating": average_rating,
+                    "presentation_rating": presentation_rating,
+                    "quality_rating": quality_rating,
+                    "texture_rating": texture_rating,
+                    "taste_rating": taste_rating,
+                    "categories":[category.to_dict() for category in food_item.categories]
                 }
                 nutrition_fact = FoodDatabase.get_nutrition_fact(food_item_id)
                 if nutrition_fact:  # Changed from plural to singular
@@ -226,8 +253,8 @@ class FoodService:
                     "name": food_item.name,
                     "description": food_item.description,
                     "price": food_item.price,
-                    "category": food_item.category,
-                    "in_stock": food_item.availability
+                    "in_stock": food_item.availability,
+                    "categories":[category.to_dict() for category in food_item.categories] 
                 }
                 
                 # Optionally add nutrition facts
@@ -261,9 +288,9 @@ class FoodService:
                     "name": food_item.name,
                     "description": food_item.description,
                     "price": food_item.price,
-                    "category": food_item.category,
                     "in_stock": food_item.availability,
                     "has_nutrition_fact": food_item.has_nutrition_fact,
+                    "categories":[category.to_dict() for category in food_item.categories],
                     "image_data": encoded_image  # Send Base64 data
                 })
 

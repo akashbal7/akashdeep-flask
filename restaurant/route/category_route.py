@@ -42,6 +42,6 @@ def get_all_categories():
     try:
         categories = CategoryService.get_all_categories()
         category_list = [category.to_dict() for category in categories]
-        return jsonify({"categories": category_list}), 200
+        return jsonify({"data": category_list}), 200
     except Exception as e:
         return jsonify({"message": "Failed to retrieve categories.", "error": str(e)}), 500

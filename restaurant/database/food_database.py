@@ -102,4 +102,5 @@ class FoodDatabase:
         except Exception as e:
             print(f"Database error when retrieving food Nutrition Fact.: {e}")
             raise ValueError("Unable to getch Nutrition Fact.")
+        
 

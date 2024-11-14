@@ -24,6 +24,10 @@ class ReviewService:
                 customer_id=customer_id,
                 restaurant_id=restaurant_id,
                 rating=data['rating'],
+                experience_rating=data['experience_rating'],
+                value_rating=data['value_rating'],
+                service_rating=data['service_rating'],
+                food_rating=data['food_rating'],
                 review_text=data.get('review_text')
             )
             

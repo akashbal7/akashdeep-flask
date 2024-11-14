@@ -65,6 +65,15 @@ class RestaurantDatabase:
             db.session.rollback()
             print(f"Error updating restaurant: {e}")
             raise
+        
+    @staticmethod
+    def get_all_restaurants():
+        try:
+            restaurants = Restaurant.query.all()
+            return restaurants
+        except Exception as e:
+            print(f"Error fetching restaurants: {e}")
+            raise
 
     @staticmethod
     def commit_transaction():

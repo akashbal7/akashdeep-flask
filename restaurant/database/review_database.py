@@ -4,12 +4,16 @@ from restaurant.model.models import FoodItem, db, RestaurantReview, FoodReview
 class ReviewDatabase:
     
     @staticmethod
-    def create_review(customer_id, restaurant_id, rating, review_text=None):
+    def create_review(customer_id, restaurant_id, rating,experience_rating=0,value_rating=0,service_rating=0,food_rating=0, review_text=None):
         # Create and return a new RestaurantReview object
         review = RestaurantReview(
             customer_id=customer_id,
             restaurant_id=restaurant_id,
             rating=rating,
+            experience_rating=experience_rating,
+            value_rating=value_rating,
+            service_rating=service_rating,
+            food_rating=food_rating,
             review_text=review_text
         )
         db.session.add(review)

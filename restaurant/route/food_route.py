@@ -9,9 +9,10 @@ food_bp = Blueprint('food_controller', __name__)
 
 @food_bp.route('/restaurant/<int:restaurant_id>/food', methods=['POST'])
 def add_food_item(restaurant_id):
-    data = request.get_json()
+    data = request.form  # Use request.form for form data and file uploads
+    image_file = request.files.get('image')
     try:
-        food_item = FoodService.add_food_item(data, restaurant_id)
+        food_item = FoodService.add_food_item(data, restaurant_id, image_file)
         return jsonify({"message": "Food item added successfully.", "food_item_id": food_item.id}), 201
     except Exception as e:
         return jsonify({"message": "Failed to add food item.", "error": str(e)}), 500

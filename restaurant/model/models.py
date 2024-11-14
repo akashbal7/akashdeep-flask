@@ -124,12 +124,14 @@ class Restaurant(db.Model):
     sitting_capacity = Column(Integer)  # Sitting capacity field
     cuisine = Column(String(100))  # Cuisine type field
     about = Column(Text)
+    image_filename = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     owner = relationship('User', backref=backref('restaurants', cascade='all, delete-orphan'))
     address = relationship('Address', backref=backref('restaurants', cascade='all, delete-orphan'))
     categories = relationship('Category', secondary=restaurant_category_table, back_populates='restaurants')
+    reviews = relationship('RestaurantReview', backref='parent_restaurant', cascade='all, delete-orphan')
     
     
     def to_dict(self):
@@ -140,6 +142,7 @@ class Restaurant(db.Model):
             "name": self.name,
             "address_id": self.address_id,
             "phone_number": self.phone_number,
+            "about": self.about,
             "website": self.website,
             "sitting_capacity": self.sitting_capacity,
             "cuisine": self.cuisine,
@@ -162,9 +165,10 @@ class FoodItem(db.Model):
     image_filename = Column(String(200), nullable=True)
     has_nutrition_fact = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    nutrition_facts = relationship('NutritionFacts', backref='food_item', uselist=False)
     
     categories = relationship('Category', secondary=category_food_table, back_populates='food_items')
+    nutrition_facts = relationship('NutritionFacts', backref='food_item', uselist=False)
+    reviews = relationship('FoodReview', backref='parent_food_item', cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -314,7 +318,7 @@ class FoodReview(db.Model):
 
     # Relationships
     customer = relationship('User', backref=backref('food_reviews', cascade='all, delete-orphan'))
-    food_item = relationship('FoodItem', backref=backref('food_reviews', cascade='all, delete-orphan'))
+    
 
     def __repr__(self):
         return f'<FoodReview {self.id}, Customer {self.customer_id}, Rating {self.rating}>'
@@ -341,15 +345,32 @@ class RestaurantReview(db.Model):
     customer_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id', ondelete='CASCADE'), nullable=False)
     rating = Column(Integer, nullable=False)
+    food_rating = Column(Integer, nullable=True)
+    service_rating = Column(Integer, nullable=True)
+    value_rating = Column(Integer, nullable=True)
+    experience_rating = Column(Integer, nullable=True)
     review_text = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     customer = relationship('User', backref=backref('restaurant_reviews', cascade='all, delete-orphan'))
-    restaurant = relationship('Restaurant', backref=backref('restaurant_reviews', cascade='all, delete-orphan'))
 
     def __repr__(self):
         return f'<RestaurantReview {self.id}, Customer {self.customer_id}, Rating {self.rating}>'
+    
+    def to_dict(self):
+        """Convert the FoodReview instance to a dictionary for easy JSON serialization."""
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "rating": self.rating,
+            "food_rating": self.food_rating,
+            "service_rating": self.service_rating,
+            "value_rating": self.value_rating,
+            "experience_rating": self.experience_rating,
+            "review_text": self.review_text,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
 
 class JWTToken(db.Model):
     __tablename__ = 'jwt_tokens'
