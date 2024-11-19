@@ -179,6 +179,7 @@ class FoodItem(db.Model):
             "price": self.price,
             "category": self.category,
             "availability": self.availability,
+            "image_filename": self.image_filename,
         }
         
 class Category(db.Model):

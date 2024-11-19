@@ -22,9 +22,10 @@ def add_food_into_cart(user_id):
         return jsonify({"message": str(e)}), 500
     
 @cart_bp.route('/user/<int:user_id>/cart/<int:cart_id>', methods=['PUT'])
-def remove_cart_item_quantity(user_id, cart_id):
+def update_item_quantity(user_id, cart_id):
     try:
-        cart_item, status = CartService.remove_item_quantity(user_id, cart_id)
+        data = request.get_json()
+        cart_item, status = CartService.update_item_quantity(data, user_id, cart_id)
         return jsonify(cart_item), status
     except Exception as e:
         return jsonify({"message": "Failed to update cart item quantity.", "error": str(e)}), 500

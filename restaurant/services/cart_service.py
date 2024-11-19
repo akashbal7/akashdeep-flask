@@ -1,5 +1,6 @@
 from restaurant.database.cart_database import CartDatabase
-import logging
+import logging, base64
+from flask import current_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,8 +36,13 @@ class CartService:
             raise ValueError("Uanble to add item into cart, try again")
         
     @staticmethod
-    def remove_item_quantity(customer_id, cart_id):
+    def update_item_quantity(data, customer_id, cart_id):
     # Retrieve the cart item
+        if "quantity" not in data or not isinstance(data["quantity"], int) or data["quantity"] < 0:
+            return {
+                "message": "Invalid quantity provided.",
+                "data": {"customer_id": customer_id}
+            }, 400
         cart_item = CartDatabase.get_cart_by_id(cart_id)
 
         if not cart_item:
@@ -52,10 +58,10 @@ class CartService:
         result = {}
 
         # Check if quantity is greater than 1 before reducing
-        if cart_item.quantity > 1:
-            cart_item.quantity -= 1
+        if cart_item.quantity > 0:
+            cart_item.quantity = data["quantity"]
+            print("cart", cart_item)
             CartDatabase.update_cart_item(cart_item)  # Update the quantity in the database
-            
             result = {
                 "message": "Quantity updated successfully.",
                 "data": {
@@ -85,6 +91,7 @@ class CartService:
     def delete_cart_item(customer_id, cart_id):
     # Retrieve the cart item
         cart_item = CartDatabase.get_cart_by_id(cart_id)
+        print("cartttttttt", cart_item)
 
         if not cart_item:
             return {
@@ -101,32 +108,42 @@ class CartService:
         CartDatabase.commit_transaction()
         
         return {
-                "message": "Cart item not found.",
-                "data": {},
-            }, 404
+                "message": "Cart item deleted successfully.",
+                "data": [],
+            }, 200
         
     @staticmethod
     def get_cart_items_by_user(user_id):
+        upload_folder = current_app.config['UPLOAD_FOLDER']
         # Retrieve all cart items for the specified user
         cart_items = CartDatabase.get_cart_items_by_user(user_id)
 
         if not cart_items:
-            return {"message": "No items in the cart."}, 404
+             return {
+                "message": "Cart item not found.",
+                "data": []
+            }, 404
 
         # Format the response data
-        formatted_items = [
-            {
-                "id": item.id,
-                "food_item_id": item.food_item_id,
-                "quantity": item.quantity,
-                "added_at": item.created_at.isoformat()  # Format date as ISO string
-            }
-            for item in cart_items
-        ]
-        
+        cart_items_array = []
+        for item in cart_items:
+            if item.food_item.image_filename:
+                with open(f"{upload_folder}/{item.food_item.image_filename}", "rb") as img_file:
+                    encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+            else:
+                encoded_image = None
+            cart_items_array.append({
+                    "id": item.id,
+                    "food_item": {
+                        **item.food_item.to_dict(),
+                        "image_data": encoded_image
+                    },
+                    "quantity": item.quantity,
+                    "added_at": item.created_at.isoformat(),
+                })
         return {
                 "message": "Cart items retrieved successfully.",
-                "data": formatted_items
+                "data": cart_items_array
             }, 200
         
          
