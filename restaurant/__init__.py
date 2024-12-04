@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 
 
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 # Load configuration from config.py
 app.config.from_pyfile('../config.py')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'images')
@@ -36,7 +36,7 @@ def load_user(user_id):
 # Allow CORS to enable communication between React (frontend) and Flask (backend)
 CORS(app, 
      resources={r"/*": {
-         "origins": ["http://localhost:5173"],
+         "origins": "*",
          "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          "allow_headers": ["Content-Type", "Authorization"],
          "supports_credentials": True

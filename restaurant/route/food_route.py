@@ -2,10 +2,13 @@ from flask import Blueprint, request, jsonify
 from restaurant.auth_middleware import token_required
 from restaurant.services.food_service import FoodService
 import logging
+import socket
 
 
 logger = logging.getLogger(__name__)
 food_bp = Blueprint('food_controller', __name__)
+hostname = socket.gethostname()
+ip_address = socket.gethostbyname(hostname)
 
 @food_bp.route('/restaurant/<int:restaurant_id>/food', methods=['POST'])
 def add_food_item(restaurant_id):
@@ -69,6 +72,19 @@ def get_food_nutrition_fact(food_item_id):
         return jsonify({"message": str(e)}), 404
     except Exception as e:
         return jsonify({"message": "Failed to retrieve nutrition facts.", "error": str(e)}), 500
+    
+@food_bp.route('/')
+def hello_cloud():
+  return 'Welcome to Akashdeep Final Test API Server'
+  
+@food_bp.route('/host')
+def host_name():
+  return hostname
+
+@food_bp.route('/ip')
+def host_ip():
+  return ip_address
+
 
 
 

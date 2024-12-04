@@ -101,6 +101,7 @@ class FoodService:
             quality_rating = None
             presentation_rating = None
             taste_rating = None
+            upload_folder = current_app.config['UPLOAD_FOLDER']
             food_item = FoodDatabase.get_food_item(food_item_id)
             reviews = [review.to_dict() for review in food_item.reviews]
             if reviews:
@@ -114,6 +115,12 @@ class FoodService:
                 
             if not food_item:
                 raise ValueError("Food item not found.")
+            if food_item.image_filename:
+                with open(f"{upload_folder}/{food_item.image_filename}", "rb") as img_file:
+                        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+            else:
+                encoded_image = None
+                
             if food_item:
                 food_item_data = {
                     "id": food_item.id,
@@ -129,6 +136,7 @@ class FoodService:
                     "quality_rating": quality_rating,
                     "texture_rating": texture_rating,
                     "taste_rating": taste_rating,
+                    "image_data": encoded_image,  
                     "categories":[category.to_dict() for category in food_item.categories]
                 }
                 nutrition_fact = FoodDatabase.get_nutrition_fact(food_item_id)
