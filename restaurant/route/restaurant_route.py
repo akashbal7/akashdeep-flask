@@ -33,7 +33,7 @@ def edit_address(restaurant_id, address_id):
         logger.exception("Error updating address")
         return jsonify({'error': 'Failed to update address. Please try again later.'}), 500
     
-@restaurant_bp.route('/restaurants', methods=['GET'])
+@restaurant_bp.route('/restaurantss', methods=['GET'])
 def get_all_restaurants():
     try:
         result, status_code = RestaurantService.get_restaurants()
@@ -50,3 +50,7 @@ def get_restaurant(restaurant_id):
     except Exception as e:
         logger.exception("Error fetching restaurant", {e})
         return jsonify({'error': 'Failed to fetching restaurants. Please try again later.'}), 500
+    
+@restaurant_bp.route('/restaurants')
+def hello_cloud():
+  return 'Welcome to Akashdeep Final Test API Server !!!!!!!!!!!!'
