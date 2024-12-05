@@ -54,3 +54,8 @@ def get_restaurant(restaurant_id):
 @restaurant_bp.route('/restaurants')
 def hello_cloud():
   return 'Welcome to Akashdeep Final Test API Server !!!!!!!!!!!!'
+
+@restaurant_bp.route('/health', methods=['GET'])
+def health():
+    return {"status": "ok"}, 200
+
